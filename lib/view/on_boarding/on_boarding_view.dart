@@ -1,5 +1,6 @@
 import 'package:fitness/common_widget/on_boarding_page.dart';
 import 'package:fitness/view/login/signup_view.dart';
+import 'package:fitness/view/login/welcome_view.dart';
 import 'package:flutter/material.dart';
 import '../../common/colo_extension.dart';
 
@@ -39,8 +40,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
     },
     {
       "title": "Nutrisi untuk Hidup Sehat",
-      "subtitle":
-          "Masak makanan sehat untuk mendukung gaya hidup aktifmu.",
+      "subtitle": "Masak makanan sehat untuk mendukung gaya hidup aktifmu.",
       "image": "assets/img/on_3.png"
     },
     {
@@ -82,7 +82,8 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                   ),
                 ),
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(

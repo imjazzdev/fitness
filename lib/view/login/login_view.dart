@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:fitness/view/api_service.dart';
 
 class LoginView extends StatefulWidget {
-  const LoginView({super.key});
-
   @override
   State<LoginView> createState() => _LoginViewState();
 }
@@ -15,14 +13,21 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final ApiService _apiService = ApiService();
+  // final ApiService _apiService = ApiService();
+  late final ApiService _apiService;
   bool isLoading = false;
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   void dispose() {
-      _usernameController.dispose();
-      _passwordController.dispose();
-      super.dispose();
-    }
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   void _handleLogin() async {
     setState(() {
@@ -47,15 +52,17 @@ class _LoginViewState extends State<LoginView> {
       isLoading = false;
     });
 
-    if (response != null && response['status'] != null && response['status'] is bool) {
+    if (response != null &&
+        response['status'] != null &&
+        response['status'] is bool) {
       if (response['status'] == true) {
         // Jika login berhasil, arahkan ke HomeView
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => WelcomeView(
-                  username: username,
-                )),
+              builder: (context) => WelcomeView(
+                    username: username,
+                  )),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -83,9 +90,13 @@ class _LoginViewState extends State<LoginView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text("Hey there,", style: TextStyle(color: TColor.gray, fontSize: 16)),
+                Text("Hey there,",
+                    style: TextStyle(color: TColor.gray, fontSize: 16)),
                 Text("Welcome Back",
-                    style: TextStyle(color: TColor.black, fontSize: 20, fontWeight: FontWeight.w700)),
+                    style: TextStyle(
+                        color: TColor.black,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700)),
                 SizedBox(height: media.width * 0.05),
                 RoundTextField(
                   hitText: "Name",

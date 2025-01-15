@@ -2,6 +2,9 @@ import 'dart:io'; // Menambahkan ini untuk mendukung File
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../common/colo_extension.dart';
+import 'package:fitness/helpers/database_helper.dart';
+import 'package:fitness/models/photo.dart';
+
 
 class PhotoProgressView extends StatefulWidget {
   const PhotoProgressView({super.key});
@@ -13,53 +16,67 @@ class PhotoProgressView extends StatefulWidget {
 class _PhotoProgressViewState extends State<PhotoProgressView> {
   List photoArr = [];
 
+  @override
+  void initState() {
+    super.initState();
+    _loadPhotos(); // Panggil fungsi untuk memuat data dari database
+  }
+
+  Future<void> _loadPhotos() async {
+    // Ambil data dari SQLite
+    List<Photo> photos = await DatabaseHelper().getPhotos();
+
+    // Update photoArr agar data berasal dari database
+    setState(() {
+      photoArr = photos.map((p) => {
+            "time": p.date,
+            "photo": [p.path],
+          }).toList();
+    });
+  }
+
   Future<void> _uploadPhoto() async {
-    // Menampilkan dialog konfirmasi
-    bool? confirm = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Konfirmasi"),
-        content: const Text("Tolong masukkan gambar dengan benar."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Batal"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Lanjutkan"),
-          ),
-        ],
-      ),
-    );
+  bool? confirm = await showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("Konfirmasi"),
+      content: const Text("Tolong masukkan gambar dengan benar."),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text("Batal"),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text("Lanjutkan"),
+        ),
+      ],
+    ),
+  );
 
-    // Jika pengguna memilih "Lanjutkan", buka galeri atau kamera
-    if (confirm == true) {
-      final picker = ImagePicker();
-      // Pilih antara kamera atau galeri
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery); // Ganti dengan ImageSource.camera jika ingin menggunakan kamera
+  if (confirm == true) {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-      if (pickedFile != null) {
-        String currentDate = "${DateTime.now().day} ${DateTime.now().month}";
+    if (pickedFile != null) {
+      String currentDate = "${DateTime.now().day} ${DateTime.now().month}";
 
-        setState(() {
-          var existingEntry = photoArr.firstWhere(
-            (entry) => entry["time"] == currentDate,
-            orElse: () => {},
-          );
+      // Simpan ke database
+      Photo photo = Photo(path: pickedFile.path, date: currentDate);
+      await DatabaseHelper().insertPhoto(photo);
 
-          if (existingEntry.isNotEmpty) {
-            existingEntry["photo"].add(pickedFile.path);
-          } else {
-            photoArr.add({
-              "time": currentDate,
-              "photo": [pickedFile.path],
-            });
-          }
-        });
-      }
+      // Update UI
+      List<Photo> photos = await DatabaseHelper().getPhotos();
+      setState(() {
+        photoArr = photos.map((p) => {
+              "time": p.date,
+              "photo": [p.path]
+            }).toList();
+      });
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

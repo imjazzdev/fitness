@@ -1,3 +1,5 @@
+import 'package:fitness/helpers/database_helper.dart';
+import 'package:fitness/models/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../common/colo_extension.dart';
@@ -14,88 +16,142 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
+
+  @override
+void initState() {
+  super.initState();
+  _loadProfile();
+}
+
+Future<void> _loadProfile() async {
+  // Ambil data profil dari SQLite
+  Profile? profile = await DatabaseHelper().getProfile(1);
+  if (profile != null) {
+    setState(() {
+      height = profile.height;
+      weight = profile.weight;
+      age = profile.age;
+      _profileImage = profile.profileImagePath != null ? File(profile.profileImagePath!) : null;
+    });
+  } else {
+    // Jika tidak ada data, buat entri kosong default
+    final defaultProfile = Profile(
+      id: 1,
+      username: widget.username,
+      height: 0,
+      weight: 0,
+      age: 0,
+      profileImagePath: null,
+    );
+    await DatabaseHelper().insertProfile(defaultProfile);
+    setState(() {
+      height = 0;
+      weight = 0;
+      age = 0;
+      _profileImage = null;
+    });
+  }
+}
+
+
   int height = 0;
   int weight = 0;
   int age = 0;
   File? _profileImage;
 
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  final picker = ImagePicker();
+  final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      setState(() {
-        _profileImage = File(pickedFile.path);
-      });
-    }
+  if (pickedFile != null) {
+    setState(() {
+      _profileImage = File(pickedFile.path);
+    });
+
+    // Perbarui hanya path gambar di database
+    await DatabaseHelper().updateProfilePicture(1, pickedFile.path);
   }
+}
+
 
   void _editProfile() async {
-    final updatedValues = await showDialog<Map<String, int>>(
-      context: context,
-      builder: (BuildContext context) {
-        int tempHeight = height;
-        int tempWeight = weight;
-        int tempAge = age;
+  final updatedValues = await showDialog<Map<String, int>>(
+    context: context,
+    builder: (BuildContext context) {
+      int tempHeight = height;
+      int tempWeight = weight;
+      int tempAge = age;
 
-        return AlertDialog(
-          title: const Text('Edit Profile'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Height (cm)"),
-                onChanged: (value) {
-                  tempHeight = int.tryParse(value) ?? tempHeight;
-                },
-              ),
-              TextField(
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Weight (kg)"),
-                onChanged: (value) {
-                  tempWeight = int.tryParse(value) ?? tempWeight;
-                },
-              ),
-              TextField(
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Age (years)"),
-                onChanged: (value) {
-                  tempAge = int.tryParse(value) ?? tempAge;
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(null);
+      return AlertDialog(
+        title: const Text('Edit Profile'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Height (cm)"),
+              onChanged: (value) {
+                tempHeight = int.tryParse(value) ?? tempHeight;
               },
-              child: const Text("Cancel"),
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop({
-                  "height": tempHeight,
-                  "weight": tempWeight,
-                  "age": tempAge,
-                });
+            TextField(
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Weight (kg)"),
+              onChanged: (value) {
+                tempWeight = int.tryParse(value) ?? tempWeight;
               },
-              child: const Text("Save"),
+            ),
+            TextField(
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Age (years)"),
+              onChanged: (value) {
+                tempAge = int.tryParse(value) ?? tempAge;
+              },
             ),
           ],
-        );
-      },
-    );
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(null);
+            },
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop({
+                "height": tempHeight,
+                "weight": tempWeight,
+                "age": tempAge,
+              });
+            },
+            child: const Text("Save"),
+          ),
+        ],
+      );
+    },
+  );
 
-    if (updatedValues != null) {
-      setState(() {
-        height = updatedValues["height"]!;
-        weight = updatedValues["weight"]!;
-        age = updatedValues["age"]!;
-      });
-    }
+  if (updatedValues != null) {
+    setState(() {
+      height = updatedValues["height"]!;
+      weight = updatedValues["weight"]!;
+      age = updatedValues["age"]!;
+    });
+
+    // Simpan ke database
+    final profile = Profile(
+      id: 1,
+      username: widget.username,
+      height: height,
+      weight: weight,
+      age: age,
+      profileImagePath: _profileImage?.path,
+    );
+    await DatabaseHelper().updateProfile(profile);
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

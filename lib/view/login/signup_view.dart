@@ -28,8 +28,8 @@ class _SignUpViewState extends State<SignUpView> {
   }
 
   bool _isValidEmail(String email) {
-    final emailRegex = RegExp(
-        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\$');
+    final emailRegex =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\$');
     return emailRegex.hasMatch(email);
   }
 
@@ -68,15 +68,16 @@ class _SignUpViewState extends State<SignUpView> {
       isLoading = false;
     });
 
-    if (response != null && response['success'] != null && response['success'] is bool) {
+    if (response != null &&
+        response['success'] != null &&
+        response['success'] is bool) {
       if (response['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Registrasi berhasil! Silakan login.")),
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-              builder: (context) => LoginView()),
+          MaterialPageRoute(builder: (context) => LoginView()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -103,11 +104,14 @@ class _SignUpViewState extends State<SignUpView> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 30),
-                Text("Hey there,", style: TextStyle(color: TColor.gray, fontSize: 16)),
+                Text("Hey there,",
+                    style: TextStyle(color: TColor.gray, fontSize: 16)),
                 Text(
                   "Create an Account",
                   style: TextStyle(
-                      color: TColor.black, fontSize: 20, fontWeight: FontWeight.w700),
+                      color: TColor.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700),
                 ),
                 SizedBox(height: media.width * 0.05),
                 RoundTextField(
@@ -138,17 +142,17 @@ class _SignUpViewState extends State<SignUpView> {
                       Text(
                         "Sudah Punya Akun?",
                         style: TextStyle(
-                            color: TColor.gray,
-                            fontSize: 12,
-                            ),
+                          color: TColor.gray,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(width: 20),
                       GestureDetector(
                         onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => const LoginView()),
-                          );
+                          // Navigator.pushReplacement(
+                          //   context,
+                          //   MaterialPageRoute(builder: (context) => const LoginView()),
+                          // );
                         },
                         child: Text(
                           "Login",
